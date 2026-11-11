@@ -1,6 +1,6 @@
 # Pine v6 Copilot — Claude Code Rules
 
-This repository builds a Pine Script v6 assistant with an offline static checker, retrieval, bounded repair and measured evaluation. The owner defines the Pine rules, writes the benchmark tasks and records Pine Editor labels. Claude Code implements only approved work.
+This repository builds a Pine Script v6 assistant with an offline static checker, retrieval, bounded repair and measured evaluation. Version 1.1 also adds an **opt-in, retrieval-first trader-request workflow**: interpret the requirements, match reviewed scripts, reuse/adapt/generate, report requirement coverage and provenance, then check and conditionally repair code. The original A0–A3 benchmark and Phase 0 schema stay unchanged. These are specifications, not claims of completed features. The owner defines Pine rules, curates reusable code/rights, writes benchmark tasks and records Pine Editor labels. Claude Code implements only approved work.
 
 **Authority:** `BLUEPRINT.md` is the source of truth for scope, architecture, file ownership, phases and acceptance criteria. `docs/rules.md` defines checker rules and severities. This file controls implementation behavior. If they conflict or a requirement is unsupported, stop, identify the conflict and request a decision. Never quietly change the specification.
 
@@ -25,15 +25,20 @@ This repository builds a Pine Script v6 assistant with an offline static checker
 - Only `llm/client.py` calls model providers. Only `config.py` reads environment configuration.
 - Do not add LangChain, LlamaIndex, agent frameworks, an ORM, Redis, queues, a separate vector database or a second backend runtime unless `BLUEPRINT.md` is explicitly revised.
 - The checker remains deterministic, independently testable, and usable without a network, database or model key.
+- The new matching workflow uses existing `chunks` and owner-curated `data/script_catalog.json`; do not add SQL tables or another search engine without approval. An unchanged reused script still passes `check()`; a modified script loses prior compiler verification.
+- Preserve baseline `answer()` behavior and the frozen A0–A3 evaluation. Add `reuse_first` as an explicit mode only after tests and approval.
 
 ## 3. File ownership and evaluation integrity
 
-- **Never edit:** `eval/golden/**`, `eval/golden.lock` or `labels/pine_editor.csv`. These are owner-managed ground truth.
+- **Never edit:** `eval/golden/**`, `eval/golden.lock` or `labels/pine_editor.csv`. These are owner-managed ground truth. When the separately approved matching evaluation begins, also protect owner-written `eval/request_cases/**` and `eval/request_cases.lock` with hooks and CI before using them.
 - Never run `python -m eval.freeze` without `--check`. Do not regenerate hashes, labels or test fixtures to make a failing result pass.
 - Read the frozen test split only when the approved evaluation command explicitly specifies `--split test`. Never use held-out tasks, labels or outputs to tune prompts, rules, retrieval or examples.
 - Never put test answers in `kb/`, prompts, fixtures, few-shot examples or application code. Do not hardcode expected evaluation outputs.
 - Only the owner changes a rule from warning to error. Apply severities from `docs/rules.md`; flag contradictions for review.
 - Pine test examples must come from owner-approved `tests/fixtures/`, `docs/rules.md` or `kb/`. Do not invent unverified Pine functions or signatures.
+- `data/script_catalog.json` is owner-curated. Never fabricate script descriptions, verification dates, hashes, licenses, permitted reuse, requirements or Pine Editor results.
+- Never import, scrape, copy or reuse third-party code without documented appropriate permission; similarity does not establish license rights.
+- Keep the new matching/requirements test split and results separate from the frozen A0–A3 tasks. Never tune a router on held-out examples; only the owner writes and freezes `eval/request_cases/` and its lock.
 - Version prompts: add `prompts/*_v2.txt` rather than overwriting `*_v1.txt` used by a prior evaluation.
 - Every eval run must preserve the actual code commit, model IDs, prompt version and time with raw outputs. Results in the README must be generated from saved run artifacts, not fabricated or rounded into misleading claims.
 - Keep **static-check pass**, **Pine Editor compile pass**, and **strategy correctness** distinct. Never call a script compiler-verified solely because the third-party AST checker found no errors.
@@ -60,6 +65,12 @@ This repository builds a Pine Script v6 assistant with an offline static checker
 - Use bound SQL parameters. Never build SQL by interpolating user input.
 - Set `max_tokens`, request timeouts and bounded repair counts for model calls. Do not retry indefinitely or trigger paid evaluation by accident.
 - Keep user input limits and safe web rendering. Write model-supplied text with `textContent`, never `innerHTML`.
+- A trader's desired entries, exits, timeframe, stop-loss and risk settings are **user requirements**, not Pine compiler rules. Do not auto-generate or alter static checker severities from user prompts.
+- If a strategy request lacks a material parameter, ask for clarification or mark it unresolved; never silently invent stop-loss, risk-reward, position size or execution assumptions.
+- Reuse scripts only with verified catalog metadata, matching material requirements, unchanged content hash and permission. Changed code loses prior compiler-verification status.
+- For product mode, report every material requirement as supported/missing/uncertain with evidence; do not call model opinions semantic proof.
+- Repair verified actionable static errors only; the new product mode may separately correct definitely missing requirements identified by structural checks. Share one maximum of two correction attempts. Preserve draft, diff and requirements; never silently accept changed behavior. Unsupported parser syntax is not a reason to rewrite code.
+- Keep baseline limits (3 chat calls max). New `reuse_first` mode may use one bounded interpretation call plus draft and two repairs (4 chat max); measure the extra cost and respect hard provider limits.
 - Do not expose the parser to unbounded public inputs. Before public deployment, verify that input caps, recursion protection and a hard execution-time boundary are implemented or clearly reported as blockers.
 - Do not add network access or arbitrary command execution to generated Pine code or to the model pipeline.
 - When changing rate limits, budgets or persistence, consider concurrent requests and document known failure modes. Never describe a soft token budget as a guaranteed spending ceiling.
@@ -79,12 +90,14 @@ After changing `eval/`, `prompts/` or `kb/`, run the configured eval-reviewer ag
 
 - `checker/`: `check(source) -> list[Finding]`, implementing E00–E15 and W01–W10 from `docs/rules.md`.
 - `data/signatures.json`: owner-curated signatures; E12 flags a missing built-in only for a complete namespace or a missing parameter only for a function marked `params_complete`.
-- `kb/`: owner-authored notes and Pine scripts. `ingest/` indexes them into `chunks`.
-- `retrieval/`: exact symbols first, then `db/search.sql` full-text and vector retrieval combined by RRF.
-- `pipeline/answer.py`: retrieve, generate, check and repair at most twice, retaining the draft and best candidate.
-- `api/`: `/check`, `/ask`, `/feedback`, `/healthz`, plus the static web page.
+- `kb/`: owner-authored or explicitly rights-cleared Pine notes and scripts. `ingest/` indexes them into existing `chunks`.
+- `data/script_catalog.json`: owner-approved script type, indicators, entry/exit/risk behavior, allowed adaptation, provenance and content hash. Never claim automatic verification from metadata alone.
+- `retrieval/`: exact symbols first, then `db/search.sql` full-text and vector retrieval combined by RRF; later `match.py` filters and ranks owner-approved script candidates.
+- `pipeline/answer.py`: baseline retrieve/generate/check/repair (max twice), retaining draft and best candidate. Later opt-in `reuse_first` returns reusable, adapted or generated script plus coverage and provenance; `requirements.py` holds structured interpretation and coverage checks.
+- `api/`: `/check`, `/ask`, `/feedback`, `/healthz`, plus the static web page. `mode=reuse_first` is explicit and disabled until approved and tested.
 - `prompts/`: versioned prompts that remain stable after evaluation.
-- `eval/`: benchmark runs and reports; owner-only ground truth lives under `eval/golden/` and `labels/`.
+- `eval/`: original A0–A3 benchmark runs and reports; a separate, pre-frozen request-matching evaluation comes later. Owner-only ground truth lives under `eval/golden/` and `labels/`.
+- `prompts/`: versioned baseline and product-mode prompts; never overwrite a baseline prompt to add routing.
 
 ## 8. Local commands
 
