@@ -8,16 +8,31 @@ A Pine Script v6 assistant in early development. It is planned in three parts:
 
 ## Status
 
-Phase 0, the project skeleton: configuration loading, the database schema and search query, the task-freeze script, CI, and the Claude Code settings and hooks that protect the evaluation files. The checker rules, retrieval, generation, API and evaluation are not implemented yet.
+Implemented and tested locally:
+
+- **Static checker** (`checker/`): input limits, parsing with pynescript, and seven provisional rules (E01, E02, E07, E11, E13, E14 and E15), plus E00 for code the parser cannot read. The rules and their test scripts are documented in [docs/rules.md](docs/rules.md). None of the rules has been confirmed in TradingView's Pine Editor yet, so every finding is a warning, not a confirmed compile error.
+- **Check page and `POST /check`** (`api/`): runs the checker on pasted code. No model is called and the code is not stored.
+
+Still under development: retrieval (RAG), code generation, code reuse, automated repair and the evaluation.
+
+The app is for local development only. The parser has no hard time limit yet, so the service must not be exposed publicly.
 
 ## Run locally
 
-You need Python 3.12 and Docker.
+You need Python 3.12. Docker is only needed for the database that later features use.
 
 ```shell
 py -3.12 -m venv .venv          # macOS/Linux: python3.12 -m venv .venv
 .venv\Scripts\Activate.ps1      # macOS/Linux: source .venv/bin/activate
 pip install -e ".[dev]"
+uvicorn api.app:app             # Check page on http://127.0.0.1:8000
+```
+
+`POST /check` takes `{"code": "<Pine Script source>"}` and returns `findings` (each with `rule`, `severity`, `line`, `col` and `message`; lines count from 1 and columns from 0), the `errors` and `warnings` counts, and a `note`. Empty code, or code over 40,000 characters, 800 lines or 50 levels of bracket nesting, gets HTTP 422.
+
+The database for later features:
+
+```shell
 docker compose up -d db         # Postgres 16 with pgvector on 127.0.0.1:5432
 ```
 

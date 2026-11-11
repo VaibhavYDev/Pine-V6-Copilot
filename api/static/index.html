@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Pine v6 Copilot · Check</title>
+  <link rel="stylesheet" href="/static/style.css">
+  <script src="/static/app.js" defer></script>
+</head>
+<body>
+  <header class="site-header">
+    <h1>Pine v6 Copilot</h1>
+    <p class="tagline">Paste Pine Script v6 code to run the offline static checker. No model is involved and the code is not stored.</p>
+  </header>
+
+  <main class="layout">
+    <section class="panel" aria-labelledby="code-heading">
+      <h2 id="code-heading">Code</h2>
+      <textarea id="code" spellcheck="false" autocomplete="off" placeholder="Paste Pine Script v6 code here" aria-describedby="code-help"></textarea>
+      <p id="code-help" class="hint">Up to 40,000 characters and 800 lines. Ctrl+Enter runs the check.</p>
+      <div class="actions">
+        <button id="check" type="button" class="primary">Check code</button>
+        <button id="copy" type="button">Copy code</button>
+        <button id="clear" type="button">Clear</button>
+      </div>
+      <p id="status" class="status" role="status" aria-live="polite"></p>
+    </section>
+
+    <section class="panel" aria-labelledby="results-heading">
+      <h2 id="results-heading">Findings</h2>
+      <p id="summary" class="summary">Run a check to see findings.</p>
+      <ol id="findings" class="findings"></ol>
+      <dl class="legend">
+        <dt><span class="badge error">Error</span></dt>
+        <dd>A rule the project owner has confirmed in TradingView's Pine Editor.</dd>
+        <dt><span class="badge warning">Warning</span></dt>
+        <dd>A provisional finding or a v6 behavior change. It is not a confirmed compile error.</dd>
+      </dl>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <p>Passing these static checks does not prove a script compiles. Read every script before you use it. Nothing here is trading advice.</p>
+    <p>This project is not affiliated with, endorsed by or sponsored by TradingView. Pine Script® and TradingView® are trademarks of TradingView, Inc.</p>
+  </footer>
+</body>
+</html>
