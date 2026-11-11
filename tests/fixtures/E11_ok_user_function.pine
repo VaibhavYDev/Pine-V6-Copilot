@@ -1,0 +1,5 @@
+//@version=6
+indicator("E11 User Function Check", overlay=true)
+tostring(value) => str.tostring(value)
+priceText = tostring(close)
+plot(close)

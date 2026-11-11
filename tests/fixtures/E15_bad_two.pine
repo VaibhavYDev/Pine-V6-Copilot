@@ -1,0 +1,4 @@
+//@version=6
+indicator("E15 Declaration Check", overlay=true)
+indicator("E15 Second Declaration", overlay=true)
+plot(close)

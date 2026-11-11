@@ -15,6 +15,7 @@ from checker import (
     check,
     deepest_nesting,
     prepare_source,
+    version_comments,
 )
 
 PROSE = "This is not Pine code."
@@ -131,6 +132,20 @@ def test_nesting_over_the_limit_is_rejected() -> None:
 )
 def test_nesting_ignores_strings_and_comments_but_not_an_unclosed_quote(source: str, depth: int) -> None:
     assert deepest_nesting(source) == depth
+
+
+@pytest.mark.parametrize(
+    ("source", "comments"),
+    [
+        ("//@version=6\nx = 1", ["//@version=6"]),
+        ("x = 1\n// @version = 6", ["// @version = 6"]),
+        ('note = "//@version=6"', []),
+        ("note = '//@version=5'\n//@version=6", ["//@version=6"]),
+        ("// a plain comment", []),
+    ],
+)
+def test_version_comments_are_found_anywhere_except_inside_strings(source: str, comments: list[str]) -> None:
+    assert version_comments(source) == comments
 
 
 def test_line_endings_become_lf() -> None:

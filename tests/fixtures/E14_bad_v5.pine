@@ -1,0 +1,3 @@
+//@version=5
+indicator("E14 Version Check", overlay=true)
+plot(close)

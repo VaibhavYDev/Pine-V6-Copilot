@@ -300,26 +300,17 @@ obj.field[1]
 ## E07 — Duplicate named arguments
 
 - **Severity:** warning
-- **Evidence status:** Owner verification not yet recorded. Severity note: warning pending fixture verification.
-- **Flags:** The same named argument appears twice in the same AST call.
-- **Does not flag:** The same name appearing in two separate calls.
-- **Message:** Remove or rename the duplicate named argument.
-- **Why:** Pine v6 disallows multiple values for the same parameter.
+- **Evidence status:** Original examples written by Claude Code for this project (M3); **UNVERIFIED**. Pine Editor results NOT TESTED. The owner may change the severity to `error` only after recording evidence.
+- **Flags:** A named argument that appears more than once in the same call, reported at the repeated argument.
+- **Does not flag:** The same name in two separate calls; positional arguments.
+- **Why:** BLUEPRINT §9.3 lists a repeated named argument as E07. Not yet confirmed in the Pine Editor.
+- **Message (template):** `{argument}` is passed more than once to {call}. Keep one.
+- **Coverage:** Any call. `{call}` is the function name with `()`, or `this call` when the callee has no plain name.
 - **Reference:** [v6 migration guide](https://www.tradingview.com/pine-script-docs/migration-guides/to-pine-version-6/)
-
-
-**Illustrative problematic pattern (not a validated fixture):**
-
-```pine
-plot(close, title="One", title="Two")
-```
-
-
-**Illustrative alternative (not compiler-verified):**
-
-```pine
-plot(close, title="One")
-```
+- **Bad fixture:** `tests/fixtures/E07_bad.pine` — expected finding line **3**, column **25**.
+- **OK fixture:** `tests/fixtures/E07_ok.pine` — no finding expected.
+- **Pine Editor:** **NOT TESTED** for both files. Compiles? `UNKNOWN`; first error (verbatim), editor line and date: `PENDING`.
+- **Fixture SHA-256 (LF):** bad `7925ec74dc996790c52138bbfcafdbbee9a38d42f02182ad38455c8f0d38e46c`; ok `1a4b12c65149f93c0144afffeea5a380a7b59f5121f7848df617895a7d2ede1e`.
 
 
 
@@ -414,31 +405,22 @@ if close > open
 ## E11 — Legacy function names
 
 - **Severity:** warning
-- **Evidence status:** Owner verification not yet recorded. Severity note: warning pending fixture verification.
-- **Flags:** Calls known to be absent or renamed in v6, only when confirmed built-ins.
-- **Does not flag:** User-defined functions that happen to use the same name; aliases/imported methods.
-- **Message:** Use the corresponding current v6 function or syntax.
-- **Why:** The blueprint lists study, security, iff, tostring and tonumber as legacy names.
+- **Evidence status:** Original examples written by Claude Code for this project (M3); **UNVERIFIED**. Pine Editor results NOT TESTED. The owner may change the severity to `error` only after recording evidence.
+- **Flags:** A call to `study`, `security`, `iff`, `tostring` or `tonumber` by its bare name, reported at the call.
+- **Does not flag:** A function the script defines itself with one of these names; calls through a namespace, library alias or variable, such as `str.tostring()`, `lib.security()` or `x.tostring()`.
+- **Why:** BLUEPRINT §9.3 lists these names and their v6 replacements. Not yet confirmed in the Pine Editor.
+- **Message (template):** {function}() is not available in Pine v6. Use {replacement} instead.
+- **Replacements (§9.3):** `study` → `indicator()`; `security` → `request.security()`; `iff` → the `?:` operator; `tostring` → `str.tostring()`; `tonumber` → `str.tonumber()`.
 - **Reference:** [Blueprint §9.3](../BLUEPRINT.md#93-rules)
-
-
-**Illustrative problematic pattern (not a validated fixture):**
-
-```pine
-study("Old")
-x = security(syminfo.tickerid, "D", close)
-```
-
-
-**Illustrative alternative (not compiler-verified):**
-
-```pine
-indicator("Current")
-x = request.security(syminfo.tickerid, "D", close)
-```
-
-
-**Implementation / verification notes:** The snippets are fragments and require a full, valid script pair; verify each listed legacy name separately.
+- **Bad fixture:** `tests/fixtures/E11_bad.pine` (`tostring`) — expected finding line **3**, column **12**.
+- **Bad fixture:** `tests/fixtures/E11_bad_tonumber.pine` — expected finding line **3**, column **8**.
+- **Bad fixture:** `tests/fixtures/E11_bad_iff.pine` — expected finding line **3**, column **9**.
+- **Bad fixture:** `tests/fixtures/E11_bad_security.pine` — expected finding line **3**, column **13**.
+- **Bad fixture:** `tests/fixtures/E11_bad_study.pine` — expected finding line **2**, column **0**. E15's missing-declaration warning is suppressed for this script because this finding already explains it.
+- **OK fixture:** `tests/fixtures/E11_ok.pine` — `str.tostring()`; no finding expected.
+- **OK fixture:** `tests/fixtures/E11_ok_user_function.pine` — a script-defined `tostring()`; no finding expected.
+- **Pine Editor:** **NOT TESTED** for all seven files. Compiles? `UNKNOWN`; first error (verbatim), editor line and date: `PENDING`.
+- **Fixture SHA-256 (LF):** bad `65ee4a732bb05d5239129b9b3c98db31e0fe550a093a72a98641a1a1a8d564d1`; bad_tonumber `b970663767ec2a1f2028e3c4e171f95021d92a275486cc31e60de8147abfaab6`; bad_iff `f724d1e256e82422aae29f9b0f1872f7bc5ada6a650e978f011cdbfff55b6c4a`; bad_security `2a5d9d25321b66ddeebe4a129b3ed3964f36205f90de739a08a506929ae5a62f`; bad_study `d52daff632346f643efa4823f63dd00c4cb3be70408582cebf022c2d52c500df`; ok `aadd76e1565c464daac1df439f7dacaa30407184fb7239495e40b127c9eb6c5e`; ok_user_function `785d78415f32cc3b2513d0794b474e47189f158a5dec91501b1efaa11a1cc1c2`.
 
 
 
@@ -474,64 +456,42 @@ x = ta.sma(close, 14)
 ## E14 — Missing v6 version annotation
 
 - **Severity:** warning
-- **Evidence status:** Owner verification not yet recorded. Severity note: warning (version compliance, not compile failure).
-- **Flags:** Source missing `//@version=6` or using an older version when v6 is required by this project.
-- **Does not flag:** Claiming that a missing annotation alone is a compilation error.
-- **Message:** Add `//@version=6` to target the supported language version.
-- **Why:** When the version annotation is omitted, Pine defaults to version 1, not automatic failure.
+- **Evidence status:** Original examples written by Claude Code for this project (M3); **UNVERIFIED**. Pine Editor results NOT TESTED. This is version compliance for the project's v6 target, not a confirmed compile error.
+- **Flags:** No `//@version=` comment anywhere in the script, or one whose version is not 6. Reported at line 1, column 0.
+- **Does not flag:** `//@version=6` on any line, including after the first statement, which pynescript itself does not report; spacing inside the comment that pynescript's comment parser accepts, such as `// @version = 6`. Text inside a string literal is never read as a version comment.
+- **Why:** BLUEPRINT v1.1 §9.3–9.4 treat E14 as a version-compliance warning. The owner reports that TradingView's documentation allows the version annotation anywhere in the script; not yet confirmed in the Pine Editor.
+- **Message (template), missing:** Add `//@version=6`: this project targets Pine v6. This is a compliance warning, not a confirmed compile error.
+- **Message (template), other version:** `//@version={version}` is not Pine v6. Use `//@version=6`; this is a compliance warning, not a confirmed compile error.
 - **Reference:** [Script structure](https://www.tradingview.com/pine-script-docs/language/script-structure/)
-
-
-**Illustrative problematic pattern (not a validated fixture):**
-
-```pine
-indicator("Unspecified Version")
-plot(close)
-```
-
-
-**Illustrative alternative (not compiler-verified):**
-
-```pine
-//@version=6
-indicator("Specified V6")
-plot(close)
-```
-
-
-**Implementation / verification notes:** This is a project-compliance warning; do not use it to infer compile rate or automatically rewrite valid older-version code.
+- **Bad fixture:** `tests/fixtures/E14_bad.pine` (no annotation) — expected finding line **1**, column **0**.
+- **Bad fixture:** `tests/fixtures/E14_bad_v5.pine` (`//@version=5`) — expected finding line **1**, column **0**.
+- **Bad fixture:** `tests/fixtures/E14_bad_string.pine` (the annotation text only inside a string) — expected finding line **1**, column **0**.
+- **OK fixture:** `tests/fixtures/E14_ok.pine` — annotation on line 1; no finding expected.
+- **OK fixture:** `tests/fixtures/E14_ok_late.pine` — annotation after the first statement; no finding expected.
+- **Pine Editor:** **NOT TESTED** for all five files. Compiles? `UNKNOWN`; warnings, editor line and date: `PENDING`.
+- **Fixture SHA-256 (LF):** bad `5f038ffd28bde4961d44f032c888cc40139f272589f2e0d760e03a6ff8e55d04`; bad_v5 `e75da140c8b5d5c1a08c0d848b727d1950199ce3d8b2003fec91bac6954306c4`; bad_string `8dd83fc3f803b4729ce4e573985df68fe5850def832cc6ab426fd100c9a382a3`; ok `9338ae6f2b5b4cabed7a6411d273a3cd8b508a112680952ca113657afa9c774e`; ok_late `b9e75a9bed94ecb7c9d7006b07f38bdc9fe3e4c1f6a82f02ebb9d3d28403f4d8`.
 
 
 
 ## E15 — Missing or incompatible script declaration
 
 - **Severity:** warning
-- **Evidence status:** Owner verification not yet recorded. Severity note: warning pending fixture verification.
-- **Flags:** A script has no eligible indicator/strategy/library declaration, multiple declarations, or strategy-order calls in an indicator when proven invalid.
-- **Does not flag:** A single valid script declaration.
-- **Message:** Define exactly one appropriate script kind and use compatible functions.
-- **Why:** Pine requires an indicator, strategy or library declaration.
+- **Evidence status:** Original examples written by Claude Code for this project (M3); **UNVERIFIED**. Pine Editor results NOT TESTED. The owner may change the severity to `error` only after recording evidence.
+- **Flags:** (1) No top-level `indicator()`, `strategy()` or `library()` call; a declaration inside a local block does not count. Reported at line 1, column 0. (2) Any further declaration call once a top-level one exists, reported at that call. (3) `strategy.entry()` in a script whose top-level declaration is `indicator()`, reported at the call.
+- **Does not flag:** A single top-level declaration; `strategy.entry()` under `strategy()`; the missing-declaration case when the script calls the legacy `study()`, which E11 already reports. `study()` is not counted as a declaration.
+- **Why:** BLUEPRINT §9.3 lists a missing or repeated declaration and strategy order calls in an indicator as E15. Not yet confirmed in the Pine Editor.
+- **Coverage:** Order-call misuse is limited to `strategy.entry()` (owner decision P-2); the other order functions need their own examples first.
+- **Message (template), missing:** No top-level indicator(), strategy() or library() declaration. Add exactly one at the top level.
+- **Message (template), duplicate:** Only one indicator(), strategy() or library() declaration is allowed. Remove this one.
+- **Message (template), strategy call in indicator:** {function}() requires a strategy() declaration, but this script is an indicator().
 - **Reference:** [Script structure](https://www.tradingview.com/pine-script-docs/language/script-structure/)
-
-
-**Illustrative problematic pattern (not a validated fixture):**
-
-```pine
-//@version=6
-plot(close)
-```
-
-
-**Illustrative alternative (not compiler-verified):**
-
-```pine
-//@version=6
-indicator("Declared")
-plot(close)
-```
-
-
-**Implementation / verification notes:** Handle the missing-declaration case separately from a duplicate declaration or incompatible strategy order use.
+- **Bad fixture:** `tests/fixtures/E15_bad.pine` (no declaration) — expected finding line **1**, column **0**.
+- **Bad fixture:** `tests/fixtures/E15_bad_local.pine` (declaration only inside an `if`) — expected finding line **1**, column **0**.
+- **Bad fixture:** `tests/fixtures/E15_bad_two.pine` (two top-level declarations) — expected finding line **3**, column **0**.
+- **Bad fixture:** `tests/fixtures/E15_bad_order.pine` (`strategy.entry()` under `indicator()`) — expected finding line **4**, column **4**.
+- **OK fixture:** `tests/fixtures/E15_ok.pine` — the same call under `strategy()`; no finding expected.
+- **Pine Editor:** **NOT TESTED** for all five files. Compiles? `UNKNOWN`; first error (verbatim), editor line and date: `PENDING`.
+- **Fixture SHA-256 (LF):** bad `d08489e48c2a59716f11ad0fa17e290e068a0be01a9322c1b4961ebfd9c01c3f`; bad_local `7f23cf33d3646b406c8207cd82d38c8c3fd30fba633422d6c072a94a3e05f05d`; bad_two `c43c69fcf09c3f77ac4db78b600d3ea70b1a2b525c0de9ad2f9f901f7935a841`; bad_order `09e69115f0c1085685ee804364a2cf224ff79f7c8b487eea6569423c643a58ac`; ok `5dfc3f5ee16a11028610214e019050b4fdcd67f1b59f4892342143f11e7f627b`.
 
 
 

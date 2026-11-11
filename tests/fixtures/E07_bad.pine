@@ -1,0 +1,3 @@
+//@version=6
+indicator("E07 Duplicate Argument Check", overlay=true)
+plot(close, title="One", title="Two")

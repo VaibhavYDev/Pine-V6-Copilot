@@ -1,0 +1,4 @@
+//@version=6
+indicator("E11 Legacy Function Check", overlay=true)
+choice = iff(close > open, close, open)
+plot(choice)

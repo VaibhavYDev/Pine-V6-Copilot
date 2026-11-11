@@ -1,0 +1,5 @@
+//@version=6
+strategy("E15 Declaration Check", overlay=true)
+if close > open
+    strategy.entry("Long", strategy.long)
+plot(close)

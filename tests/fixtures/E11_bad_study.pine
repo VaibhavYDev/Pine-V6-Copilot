@@ -1,0 +1,3 @@
+//@version=6
+study("E11 Legacy Declaration Check", overlay=true)
+plot(close)

@@ -1,0 +1,4 @@
+//@version=6
+if close > open
+    indicator("E15 Declaration Check", overlay=true)
+plot(close)
