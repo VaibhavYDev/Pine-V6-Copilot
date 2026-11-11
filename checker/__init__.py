@@ -1,4 +1,4 @@
-from collections.abc import Callable, Iterable
+from collections.abc import Callable, Iterable, Iterator
 from dataclasses import dataclass
 
 from pynescript import ast as pine
@@ -15,10 +15,6 @@ class Finding:
     line: int
     col: int
     message: str
-
-
-# A rule is added only with its owner-approved docs/rules.md section and fixtures (BLUEPRINT 9.7).
-RULES: list[Callable[[pine.AST], Iterable[Finding]]] = []
 
 
 def check(source: str) -> list[Finding]:
@@ -121,3 +117,56 @@ def call_name(call: pine.Call) -> str | None:
         return None
     parts.append(node.id)
     return ".".join(reversed(parts))
+
+
+# Coverage and severities follow docs/rules.md: each rule covers only the case its fixtures show and
+# stays a warning until the owner records Pine Editor results.
+WHEN_CALLS = {"strategy.entry"}
+TRANSP_CALLS = {"plot"}
+GLOBAL_ONLY_CALLS = {"plot"}
+LOCAL_BLOCKS = (pine.If,)
+
+
+def named_args(tree: pine.AST, functions: set[str], name: str) -> Iterator[tuple[str, pine.Arg]]:
+    for node in pine.walk(tree):
+        function = call_name(node) if isinstance(node, pine.Call) else None
+        if function in functions:
+            for arg in node.args:
+                if arg.name == name:
+                    yield function, arg
+
+
+def removed_when_param(tree: pine.AST) -> Iterator[Finding]:
+    for function, arg in named_args(tree, WHEN_CALLS, "when"):
+        message = f"`when` is not supported by {function}() in Pine v6. Guard the call with `if`."
+        yield Finding("E01", "warning", arg.lineno, arg.col_offset, message)
+
+
+def removed_transp_param(tree: pine.AST) -> Iterator[Finding]:
+    for function, arg in named_args(tree, TRANSP_CALLS, "transp"):
+        message = f"`transp` is not supported by {function}() in Pine v6. Use `color.new()` when appropriate."
+        yield Finding("E02", "warning", arg.lineno, arg.col_offset, message)
+
+
+def plot_in_local_block(tree: pine.AST) -> Iterator[Finding]:
+    def visit(node: pine.AST, inside_block: bool) -> Iterator[Finding]:
+        function = call_name(node) if isinstance(node, pine.Call) else None
+        if inside_block and function in GLOBAL_ONLY_CALLS:
+            message = (
+                f"{function}() cannot be called in a local scope. "
+                "Move it to global scope and make its series or color conditional."
+            )
+            yield Finding("E13", "warning", node.lineno, node.col_offset, message)
+        inside_block = inside_block or isinstance(node, LOCAL_BLOCKS)
+        for child in pine.iter_child_nodes(node):
+            yield from visit(child, inside_block)
+
+    yield from visit(tree, False)
+
+
+# A rule is added only with its owner-approved docs/rules.md section and fixtures (BLUEPRINT 9.7).
+RULES: list[Callable[[pine.AST], Iterable[Finding]]] = [
+    removed_when_param,
+    removed_transp_param,
+    plot_in_local_block,
+]

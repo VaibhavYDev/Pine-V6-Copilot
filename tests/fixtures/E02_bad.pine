@@ -1,0 +1,3 @@
+//@version=6
+indicator("E02 Transparency Check", overlay=true)
+plot(close, color=color.blue, transp=50)

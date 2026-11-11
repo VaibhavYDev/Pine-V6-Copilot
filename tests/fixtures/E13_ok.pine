@@ -1,0 +1,3 @@
+//@version=6
+indicator("E13 Plot Scope Check", overlay=true)
+plot(close > open ? close : na, color=color.green)

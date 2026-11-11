@@ -1,0 +1,4 @@
+//@version=6
+strategy("E01 Parameter Check", overlay=true)
+longSignal = close > open
+strategy.entry("Long", strategy.long, when=longSignal)
