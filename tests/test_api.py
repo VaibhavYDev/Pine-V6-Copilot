@@ -3,7 +3,7 @@ import logging
 import re
 import subprocess
 import sys
-from dataclasses import asdict
+from dataclasses import asdict, fields
 from pathlib import Path
 
 import pytest
@@ -11,6 +11,7 @@ from fastapi.testclient import TestClient
 
 from api.app import NOTE, app, check_code
 from checker import MAX_CHARS, MAX_LINES, MAX_NESTING, check
+from config import Settings
 
 FIXTURES = Path(__file__).parent / "fixtures"
 STATIC = Path(__file__).parents[1] / "api" / "static"
@@ -118,6 +119,14 @@ def test_check_logs_timing_and_count_but_not_the_code(caplog: pytest.LogCaptureF
     client.post("/check", json={"code": fixture("E01_bad")})
     assert "findings=1" in caplog.text
     assert "strategy.entry" not in caplog.text
+
+
+def test_check_works_without_model_database_or_env_settings(monkeypatch: pytest.MonkeyPatch) -> None:
+    for item in fields(Settings):
+        monkeypatch.delenv(item.name.upper(), raising=False)
+    response = client.post("/check", json={"code": fixture("E01_bad")})
+    assert response.status_code == 200
+    assert response.json()["warnings"] == 1
 
 
 def test_api_imports_no_config_model_or_database_code() -> None:

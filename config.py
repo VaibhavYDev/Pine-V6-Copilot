@@ -1,6 +1,12 @@
 import os
 from collections.abc import Mapping
 from dataclasses import dataclass, field, fields
+from urllib.parse import urlsplit
+
+# The environment variable prefix for each model role (BLUEPRINT 8.4).
+MODEL_ROLES = {"writer": "CHAT", "judge": "JUDGE"}
+# CLAUDE.md approves Groq and Gemini only; another provider needs the owner's approval.
+APPROVED_MODEL_HOSTS = {"api.groq.com", "generativelanguage.googleapis.com"}
 
 
 @dataclass(frozen=True)
@@ -45,3 +51,29 @@ def read_int(environ: Mapping[str, str], name: str) -> int:
         return int(environ[name])
     except ValueError:
         raise RuntimeError(f"{name} must be a whole number.") from None
+
+
+@dataclass(frozen=True)
+class ModelEndpoint:
+    role: str
+    base_url: str
+    api_key: str = field(repr=False)
+    model: str
+
+
+def model_endpoint(model: str, environ: Mapping[str, str] = os.environ) -> ModelEndpoint:
+    """The writer (CHAT_*) or judge (JUDGE_*) endpoint configured for `model`; never the other role's."""
+    roles = [role for role, prefix in MODEL_ROLES.items() if model and environ.get(f"{prefix}_MODEL") == model]
+    if not roles:
+        raise RuntimeError(f"Model {model!r} matches neither CHAT_MODEL nor JUDGE_MODEL (see .env.example).")
+    if len(roles) > 1:
+        raise RuntimeError("CHAT_MODEL and JUDGE_MODEL must differ: the judge must not grade its own answers.")
+    prefix = MODEL_ROLES[roles[0]]
+    missing = [name for name in (f"{prefix}_BASE_URL", f"{prefix}_API_KEY") if not environ.get(name)]
+    if missing:
+        raise RuntimeError(f"Set these environment variables (see .env.example): {', '.join(missing)}")
+    base_url = environ[f"{prefix}_BASE_URL"]
+    url = urlsplit(base_url)
+    if url.scheme != "https" or url.hostname not in APPROVED_MODEL_HOSTS:
+        raise RuntimeError(f"{prefix}_BASE_URL must be an https URL on {' or '.join(sorted(APPROVED_MODEL_HOSTS))}.")
+    return ModelEndpoint(roles[0], base_url, environ[f"{prefix}_API_KEY"], model)
