@@ -1,6 +1,14 @@
+from collections.abc import Callable, Mapping
+
 import pytest
 
-from config import load_settings, model_endpoint
+from config import (
+    database_url,
+    embedding_settings,
+    kb_dir,
+    load_settings,
+    model_endpoint,
+)
 
 ENVIRONMENT = {
     "DATABASE_URL": "postgresql://app:db-secret@db.example.com:5432/postgres",
@@ -93,3 +101,36 @@ def test_base_url_must_be_https_on_an_approved_provider(base_url: str) -> None:
 
 def test_endpoint_repr_hides_the_api_key() -> None:
     assert "chat-secret" not in repr(model_endpoint("writer-model", MODELS))
+
+
+EMBEDDING = {"GEMINI_API_KEY": "gemini-secret", "EMBED_MODEL": "gemini-embedding-001", "EMBED_DIM": "768"}
+
+
+def test_embedding_settings_need_only_the_embedding_variables() -> None:
+    settings = embedding_settings(EMBEDDING)
+    assert (settings.api_key, settings.model, settings.dim) == ("gemini-secret", "gemini-embedding-001", 768)
+    assert "gemini-secret" not in repr(settings)
+
+
+def test_missing_embedding_variables_are_all_named() -> None:
+    with pytest.raises(RuntimeError) as error:
+        embedding_settings({"EMBED_DIM": "768", "EMBED_MODEL": ""})
+    assert "GEMINI_API_KEY" in str(error.value)
+    assert "EMBED_MODEL" in str(error.value)
+
+
+@pytest.mark.parametrize("dim", ["3072", "1536"])
+def test_embed_dim_must_match_the_vector_size_in_the_schema(dim: str) -> None:
+    with pytest.raises(RuntimeError, match="EMBED_DIM must be 768"):
+        embedding_settings(EMBEDDING | {"EMBED_DIM": dim})
+
+
+def test_database_url_and_kb_dir_are_read_without_other_settings() -> None:
+    assert database_url({"DATABASE_URL": ENVIRONMENT["DATABASE_URL"]}) == ENVIRONMENT["DATABASE_URL"]
+    assert kb_dir({"KB_DIR": "kb"}) == "kb"
+
+
+@pytest.mark.parametrize(("read", "name"), [(database_url, "DATABASE_URL"), (kb_dir, "KB_DIR")])
+def test_a_missing_path_setting_is_named(read: Callable[[Mapping[str, str]], str], name: str) -> None:
+    with pytest.raises(RuntimeError, match=name):
+        read({})

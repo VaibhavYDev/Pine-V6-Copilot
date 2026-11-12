@@ -7,6 +7,8 @@ from urllib.parse import urlsplit
 MODEL_ROLES = {"writer": "CHAT", "judge": "JUDGE"}
 # CLAUDE.md approves Groq and Gemini only; another provider needs the owner's approval.
 APPROVED_MODEL_HOSTS = {"api.groq.com", "generativelanguage.googleapis.com"}
+# db/schema.sql stores embeddings as vector(768).
+SCHEMA_EMBED_DIM = 768
 
 
 @dataclass(frozen=True)
@@ -77,3 +79,34 @@ def model_endpoint(model: str, environ: Mapping[str, str] = os.environ) -> Model
     if url.scheme != "https" or url.hostname not in APPROVED_MODEL_HOSTS:
         raise RuntimeError(f"{prefix}_BASE_URL must be an https URL on {' or '.join(sorted(APPROVED_MODEL_HOSTS))}.")
     return ModelEndpoint(roles[0], base_url, environ[f"{prefix}_API_KEY"], model)
+
+
+@dataclass(frozen=True)
+class EmbeddingSettings:
+    api_key: str = field(repr=False)
+    model: str
+    dim: int
+
+
+def embedding_settings(environ: Mapping[str, str] = os.environ) -> EmbeddingSettings:
+    require(environ, "GEMINI_API_KEY", "EMBED_MODEL", "EMBED_DIM")
+    dim = read_int(environ, "EMBED_DIM")
+    if dim != SCHEMA_EMBED_DIM:
+        raise RuntimeError(f"EMBED_DIM must be {SCHEMA_EMBED_DIM}, the vector size in db/schema.sql.")
+    return EmbeddingSettings(environ["GEMINI_API_KEY"], environ["EMBED_MODEL"], dim)
+
+
+def database_url(environ: Mapping[str, str] = os.environ) -> str:
+    require(environ, "DATABASE_URL")
+    return environ["DATABASE_URL"]
+
+
+def kb_dir(environ: Mapping[str, str] = os.environ) -> str:
+    require(environ, "KB_DIR")
+    return environ["KB_DIR"]
+
+
+def require(environ: Mapping[str, str], *names: str) -> None:
+    missing = [name for name in names if not environ.get(name)]
+    if missing:
+        raise RuntimeError(f"Set these environment variables (see .env.example): {', '.join(missing)}")
