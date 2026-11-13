@@ -1,0 +1,9 @@
+//@version=6
+// RSI pane with configurable length and fixed visual guide levels.
+indicator("RSI Level Study", overlay=false)
+length = input.int(14, "RSI Length", minval=1)
+value = ta.rsi(close, length)
+plot(value, "RSI", color=color.aqua)
+hline(70, "Upper guide", color=color.red)
+hline(30, "Lower guide", color=color.green)
+hline(50, "Midpoint", color=color.gray)

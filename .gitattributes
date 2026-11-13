@@ -1,0 +1,5 @@
+# LF on every checkout: review/script_verification.csv records SHA-256 hashes of the exact script bytes,
+# and a Windows checkout with core.autocrlf=true would otherwise write CRLF.
+kb/** text eol=lf
+data/signatures.json text eol=lf
+review/** text eol=lf

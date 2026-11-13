@@ -1,0 +1,11 @@
+//@version=6
+// MACD line, signal and histogram in a separate study pane.
+indicator("MACD Components", overlay=false)
+fastLength = input.int(12, "Fast length", minval=1)
+slowLength = input.int(26, "Slow length", minval=1)
+signalLength = input.int(9, "Signal length", minval=1)
+[macdLine, signalLine, histogram] = ta.macd(close, fastLength, slowLength, signalLength)
+plot(macdLine, "MACD", color=color.blue)
+plot(signalLine, "Signal", color=color.orange)
+plot(histogram, "Histogram", style=plot.style_columns, color=histogram >= 0 ? color.teal : color.red)
+hline(0, "Zero", color=color.gray)

@@ -1,0 +1,11 @@
+//@version=6
+// Maintains a bounded array of recent closes and plots their average once the window is full.
+indicator("Recent Close Array Average", overlay=true)
+lookback = input.int(10, "Stored observations", minval=1, maxval=200)
+var array<float> observations = array.new<float>()
+array.push(observations, close)
+if array.size(observations) > lookback
+    array.shift(observations)
+// The average stays na until lookback closes are stored, as ta.sma() does during its warm-up.
+averageValue = array.size(observations) == lookback ? array.avg(observations) : na
+plot(averageValue, "Array average", color=color.yellow)

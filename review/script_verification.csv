@@ -1,0 +1,11 @@
+filename,sha256,verification_status,approval_status,test_date,symbol,timeframe,compiler_message,reviewer_notes,provenance
+01_ema_pair.pine,725a5e20b349ad424ec7c8c809c5cbdacd6546a3ef41e1850f258e285f56676a,NOT_TESTED,NOT_APPROVED,,,,,,original AI-drafted illustrative example; owner review required
+02_sma_cross_alerts.pine,53dee58e2ebeebff9462de54d5e87c13c3f0e9668b4c85adb227806e40470520,NOT_TESTED,NOT_APPROVED,,,,,,original AI-drafted illustrative example; behavior revised by Claude Code on 2026-11-13; owner review required
+03_rsi_oscillator.pine,a7179e12b6afa6b3bb1314a0462f5451862b8e8823d9e360d3d8948f28783360,NOT_TESTED,NOT_APPROVED,,,,,,original AI-drafted illustrative example; owner review required
+04_macd_histogram.pine,9bfda890c866a4b95524860d911e18c2096b739fbdaa8ea26d710d848c4a950d,NOT_TESTED,NOT_APPROVED,,,,,,original AI-drafted illustrative example; owner review required
+05_atr_envelope.pine,e253bcc1ebf4a9b5ef89729f2ca80b4638a602659ba7f1f319668c7f864cf047,NOT_TESTED,NOT_APPROVED,,,,,,original AI-drafted illustrative example; owner review required
+06_ema_cross_strategy.pine,b8e482c9c11d9c5c9b11c6e3f7677294502b7d70f6b0933faeffc2c19628c53a,NOT_TESTED,NOT_APPROVED,,,,,,original AI-drafted illustrative example; behavior revised by Claude Code on 2026-11-13; owner review required
+07_atr_exits_strategy.pine,aeb92f1c1269286ba99ff00daaadf0968943df2a43acf2442dc22df4f5ffd543,NOT_TESTED,NOT_APPROVED,,,,,,original AI-drafted illustrative example; behavior revised by Claude Code on 2026-11-13; owner review required
+08_higher_tf_ema.pine,fdbb840fe6447896120bd4aac7e32248a4118bb41716a654ec1ea0b95c78f56f,NOT_TESTED,NOT_APPROVED,,,,,,original AI-drafted illustrative example; behavior revised by Claude Code on 2026-11-13; owner review required
+09_recent_close_array.pine,b982058110491f27b4b20062d3c116cb978f4066ca5aa85e901fe2f1e17dfeb2,NOT_TESTED,NOT_APPROVED,,,,,,original AI-drafted illustrative example; behavior revised by Claude Code on 2026-11-13; owner review required
+10_map_demo.pine,138939290c059ad272190bb73cb865d9d9d136e1cb06e2160ff9d69d63408771,NOT_TESTED,NOT_APPROVED,,,,,,original AI-drafted illustrative example; behavior revised by Claude Code on 2026-11-13; owner review required

@@ -1,0 +1,17 @@
+//@version=6
+// Simple moving-average cross markers and alerts, confirmed when the crossing bar closes.
+indicator("SMA Cross Markers", overlay=true)
+shortLength = input.int(12, "Short SMA", minval=1)
+longLength = input.int(30, "Long SMA", minval=1)
+shortMA = ta.sma(close, shortLength)
+longMA = ta.sma(close, longLength)
+// A cross on the open bar can vanish before the bar closes, so markers and alerts wait for barstate.isconfirmed,
+// which is true on every historical bar. The ta.* calls stay left of `and`, which is always evaluated.
+bullCross = ta.crossover(shortMA, longMA) and barstate.isconfirmed
+bearCross = ta.crossunder(shortMA, longMA) and barstate.isconfirmed
+plot(shortMA, "Short SMA", color=color.blue)
+plot(longMA, "Long SMA", color=color.purple)
+plotshape(bullCross, title="Bull cross", style=shape.triangleup, location=location.belowbar, color=color.green, size=size.tiny)
+plotshape(bearCross, title="Bear cross", style=shape.triangledown, location=location.abovebar, color=color.red, size=size.tiny)
+alertcondition(bullCross, title="Bullish SMA cross", message="Short SMA crossed above long SMA")
+alertcondition(bearCross, title="Bearish SMA cross", message="Short SMA crossed below long SMA")

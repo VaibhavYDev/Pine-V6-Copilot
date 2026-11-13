@@ -1,0 +1,24 @@
+//@version=6
+// Educational long strategy: EMA-cross entries with ATR stop and target distances fixed at the signal bar.
+strategy("ATR Exit Study", overlay=true)
+fastLength = input.int(10, "Fast EMA", minval=1)
+slowLength = input.int(25, "Slow EMA", minval=1)
+atrLength = input.int(14, "ATR Length", minval=1)
+stopMultiplier = input.float(1.5, "Stop distance (ATR)", minval=0.1)
+targetMultiplier = input.float(3.0, "Target distance (ATR)", minval=0.1)
+fastEMA = ta.ema(close, fastLength)
+slowEMA = ta.ema(close, slowLength)
+atrValue = ta.atr(atrLength)
+enterLong = ta.crossover(fastEMA, slowEMA)
+// The exit is sent with the entry, so it is already active on the bar where the entry fills (the next open).
+// loss and profit are tick distances from the actual fill price, sized by the signal bar's ATR; they never move.
+// Simulation limits: a gap past the stop fills at the opening price, and when one bar reaches both levels the
+// broker emulator's assumed path inside that bar decides which exit fills. Backtest assumptions are the
+// strategy() defaults: one unit per order and no commission or slippage.
+if enterLong and strategy.position_size == 0 and not na(atrValue)
+    stopTicks = stopMultiplier * atrValue / syminfo.mintick
+    targetTicks = targetMultiplier * atrValue / syminfo.mintick
+    strategy.entry("Long", strategy.long)
+    strategy.exit("Long Risk Exit", from_entry="Long", loss=stopTicks, profit=targetTicks)
+plot(fastEMA, "Fast EMA", color=color.blue)
+plot(slowEMA, "Slow EMA", color=color.orange)

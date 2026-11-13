@@ -1,0 +1,10 @@
+//@version=6
+// Typed map demonstration: counts up, down and unchanged bars by key and plots the share of up bars.
+indicator("Map Value Study", overlay=false)
+var map<string, int> barCounts = map.new<string, int>()
+direction = close > open ? "up" : close < open ? "down" : "unchanged"
+// map.get() returns na for a key that has not been stored yet, so each key's count starts at 1.
+storedCount = map.get(barCounts, direction)
+map.put(barCounts, direction, na(storedCount) ? 1 : storedCount + 1)
+upShare = 100.0 * nz(map.get(barCounts, "up")) / (bar_index + 1)
+plot(upShare, "Up bars (%)", color=color.blue)

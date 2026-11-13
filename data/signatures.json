@@ -1,0 +1,466 @@
+{
+  "complete_namespaces": [],
+  "functions": {
+    "ta.rsi": {
+      "params": [
+        {
+          "name": "source",
+          "type": "series int/float"
+        },
+        {
+          "name": "length",
+          "type": "simple int"
+        }
+      ],
+      "returns": "series float",
+      "params_complete": true,
+      "summary": "RSI computed from a price or other numeric series."
+    },
+    "ta.sma": {
+      "params": [
+        {
+          "name": "source",
+          "type": "series int/float"
+        },
+        {
+          "name": "length",
+          "type": "series int"
+        }
+      ],
+      "returns": "series float",
+      "params_complete": false,
+      "summary": "Simple moving average over a chosen lookback."
+    },
+    "ta.ema": {
+      "params": [
+        {
+          "name": "source",
+          "type": "series int/float"
+        },
+        {
+          "name": "length",
+          "type": "simple int"
+        }
+      ],
+      "returns": "series float",
+      "params_complete": false,
+      "summary": "Exponential moving average of a numeric series."
+    },
+    "ta.crossover": {
+      "params": [
+        {
+          "name": "source1",
+          "type": "series int/float"
+        },
+        {
+          "name": "source2",
+          "type": "series int/float"
+        }
+      ],
+      "returns": "series bool",
+      "params_complete": false,
+      "summary": "Signals a crossing from at or below to above."
+    },
+    "ta.crossunder": {
+      "params": [
+        {
+          "name": "source1",
+          "type": "series int/float"
+        },
+        {
+          "name": "source2",
+          "type": "series int/float"
+        }
+      ],
+      "returns": "series bool",
+      "params_complete": false,
+      "summary": "Signals a crossing from at or above to below."
+    },
+    "ta.atr": {
+      "params": [
+        {
+          "name": "length",
+          "type": "simple int"
+        }
+      ],
+      "returns": "series float",
+      "params_complete": false,
+      "summary": "Average true range in the instrument’s price units."
+    },
+    "ta.macd": {
+      "params": [
+        {
+          "name": "source",
+          "type": "series int/float"
+        },
+        {
+          "name": "fastlen",
+          "type": "simple int"
+        },
+        {
+          "name": "slowlen",
+          "type": "simple int"
+        },
+        {
+          "name": "siglen",
+          "type": "simple int"
+        }
+      ],
+      "returns": "[series float, series float, series float]",
+      "params_complete": false,
+      "summary": "MACD, signal line and histogram."
+    },
+    "ta.highest": {
+      "params": [
+        {
+          "name": "source",
+          "type": "series int/float"
+        },
+        {
+          "name": "length",
+          "type": "series int"
+        }
+      ],
+      "returns": "series float",
+      "params_complete": false,
+      "summary": "Maximum observed value over a lookback."
+    },
+    "ta.lowest": {
+      "params": [
+        {
+          "name": "source",
+          "type": "series int/float"
+        },
+        {
+          "name": "length",
+          "type": "series int"
+        }
+      ],
+      "returns": "series float",
+      "params_complete": false,
+      "summary": "Minimum observed value over a lookback."
+    },
+    "ta.stdev": {
+      "params": [
+        {
+          "name": "source",
+          "type": "series int/float"
+        },
+        {
+          "name": "length",
+          "type": "series int"
+        }
+      ],
+      "returns": "series float",
+      "params_complete": false,
+      "summary": "Standard deviation over a lookback."
+    },
+    "ta.bb": {
+      "params": [
+        {
+          "name": "series",
+          "type": "series int/float"
+        },
+        {
+          "name": "length",
+          "type": "series int"
+        },
+        {
+          "name": "mult",
+          "type": "simple int/float"
+        }
+      ],
+      "returns": "[series float, series float, series float]",
+      "params_complete": false,
+      "summary": "Bollinger basis, upper band and lower band."
+    },
+    "input.int": {
+      "params": [
+        {
+          "name": "defval",
+          "type": "const int"
+        },
+        {
+          "name": "title",
+          "type": "const string"
+        }
+      ],
+      "returns": "input int",
+      "params_complete": false,
+      "summary": "Creates an editable integer input."
+    },
+    "input.float": {
+      "params": [
+        {
+          "name": "defval",
+          "type": "const int/float"
+        },
+        {
+          "name": "title",
+          "type": "const string"
+        }
+      ],
+      "returns": "input float",
+      "params_complete": false,
+      "summary": "Creates an editable floating-point input."
+    },
+    "input.bool": {
+      "params": [
+        {
+          "name": "defval",
+          "type": "const bool"
+        },
+        {
+          "name": "title",
+          "type": "const string"
+        }
+      ],
+      "returns": "input bool",
+      "params_complete": false,
+      "summary": "Creates an editable Boolean input."
+    },
+    "input.timeframe": {
+      "params": [
+        {
+          "name": "defval",
+          "type": "const string"
+        },
+        {
+          "name": "title",
+          "type": "const string"
+        }
+      ],
+      "returns": "input string",
+      "params_complete": false,
+      "summary": "Creates a timeframe selection input."
+    },
+    "color.new": {
+      "params": [
+        {
+          "name": "color",
+          "type": "series color"
+        },
+        {
+          "name": "transp",
+          "type": "series int/float"
+        }
+      ],
+      "returns": "series color",
+      "params_complete": false,
+      "summary": "Constructs a color with adjustable transparency."
+    },
+    "request.security": {
+      "params": [
+        {
+          "name": "symbol",
+          "type": "series string"
+        },
+        {
+          "name": "timeframe",
+          "type": "series string"
+        },
+        {
+          "name": "expression",
+          "type": "series int/float/bool/color/string, object, collection or tuple"
+        }
+      ],
+      "returns": "same type as expression",
+      "params_complete": false,
+      "summary": "Requests an expression from a symbol and timeframe."
+    },
+    "strategy.entry": {
+      "params": [
+        {
+          "name": "id",
+          "type": "series string"
+        },
+        {
+          "name": "direction",
+          "type": "series strategy_direction"
+        }
+      ],
+      "returns": "void",
+      "params_complete": false,
+      "summary": "Places a simulated entry order in a strategy."
+    },
+    "strategy.exit": {
+      "params": [
+        {
+          "name": "id",
+          "type": "series string"
+        },
+        {
+          "name": "from_entry",
+          "type": "series string"
+        }
+      ],
+      "returns": "void",
+      "params_complete": false,
+      "summary": "Creates simulated stop, limit or trailing exits."
+    },
+    "strategy.close": {
+      "params": [
+        {
+          "name": "id",
+          "type": "series string"
+        }
+      ],
+      "returns": "void",
+      "params_complete": false,
+      "summary": "Requests closing an entry by ID in a strategy."
+    },
+    "plot": {
+      "params": [
+        {
+          "name": "series",
+          "type": "series int/float"
+        },
+        {
+          "name": "title",
+          "type": "const string"
+        }
+      ],
+      "returns": "plot",
+      "params_complete": false,
+      "summary": "Displays a numeric series in an indicator or strategy."
+    },
+    "plotshape": {
+      "params": [
+        {
+          "name": "series",
+          "type": "series int/float/bool"
+        }
+      ],
+      "returns": "void",
+      "params_complete": false,
+      "summary": "Draws markers where a Boolean series is true; numeric series also work, and with location.absolute the value is the marker's price."
+    },
+    "bgcolor": {
+      "params": [
+        {
+          "name": "color",
+          "type": "series color"
+        }
+      ],
+      "returns": "void",
+      "params_complete": false,
+      "summary": "Draws chart background color at global scope."
+    },
+    "alertcondition": {
+      "params": [
+        {
+          "name": "condition",
+          "type": "series bool"
+        },
+        {
+          "name": "title",
+          "type": "const string"
+        },
+        {
+          "name": "message",
+          "type": "const string"
+        }
+      ],
+      "returns": "void",
+      "params_complete": false,
+      "summary": "Registers selectable alert conditions in an indicator."
+    },
+    "array.push": {
+      "params": [
+        {
+          "name": "id",
+          "type": "array<T>"
+        },
+        {
+          "name": "value",
+          "type": "T"
+        }
+      ],
+      "returns": "void",
+      "params_complete": false,
+      "summary": "Appends an element to an array."
+    },
+    "array.get": {
+      "params": [
+        {
+          "name": "id",
+          "type": "array<T>"
+        },
+        {
+          "name": "index",
+          "type": "series int"
+        }
+      ],
+      "returns": "T",
+      "params_complete": false,
+      "summary": "Reads an array element by position."
+    },
+    "array.size": {
+      "params": [
+        {
+          "name": "id",
+          "type": "array<T>"
+        }
+      ],
+      "returns": "series int",
+      "params_complete": false,
+      "summary": "Returns the number of array elements."
+    },
+    "array.shift": {
+      "params": [
+        {
+          "name": "id",
+          "type": "array<T>"
+        }
+      ],
+      "returns": "T",
+      "params_complete": false,
+      "summary": "Removes and returns the first array element."
+    },
+    "array.avg": {
+      "params": [
+        {
+          "name": "id",
+          "type": "array<int/float>"
+        }
+      ],
+      "returns": "series int/float",
+      "params_complete": false,
+      "summary": "Average of numeric values in an array."
+    },
+    "map.put": {
+      "params": [
+        {
+          "name": "id",
+          "type": "map<K,V>"
+        },
+        {
+          "name": "key",
+          "type": "K"
+        },
+        {
+          "name": "value",
+          "type": "V"
+        }
+      ],
+      "returns": "V",
+      "params_complete": false,
+      "summary": "Stores a value at a key and returns the key's previous value, or na if the key is new."
+    },
+    "map.get": {
+      "params": [
+        {
+          "name": "id",
+          "type": "map<K,V>"
+        },
+        {
+          "name": "key",
+          "type": "K"
+        }
+      ],
+      "returns": "V",
+      "params_complete": false,
+      "summary": "Retrieves a value for a key from a map."
+    }
+  }
+}

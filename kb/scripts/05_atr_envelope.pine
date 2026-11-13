@@ -1,0 +1,11 @@
+//@version=6
+// EMA centre line with illustrative ATR-distance upper and lower bands.
+indicator("ATR Envelope", overlay=true)
+emaLength = input.int(20, "EMA Length", minval=1)
+atrLength = input.int(14, "ATR Length", minval=1)
+multiplier = input.float(1.5, "ATR Multiplier", minval=0.1)
+centre = ta.ema(close, emaLength)
+distance = multiplier * ta.atr(atrLength)
+plot(centre, "Centre EMA", color=color.blue)
+plot(centre + distance, "Upper band", color=color.orange)
+plot(centre - distance, "Lower band", color=color.orange)

@@ -1,0 +1,17 @@
+//@version=6
+// Educational EMA-cross strategy with simulated long entries and exits.
+// Backtest assumptions are the strategy() defaults: one unit per order and no commission or slippage
+// (default_qty_value, commission_value, slippage). Orders sent at a bar's close fill at the next bar's open.
+strategy("EMA Cross Long Strategy", overlay=true)
+fastLength = input.int(9, "Fast EMA", minval=1)
+slowLength = input.int(21, "Slow EMA", minval=1)
+fastEMA = ta.ema(close, fastLength)
+slowEMA = ta.ema(close, slowLength)
+enterLong = ta.crossover(fastEMA, slowEMA)
+leaveLong = ta.crossunder(fastEMA, slowEMA)
+if enterLong
+    strategy.entry("Long", strategy.long)
+if leaveLong
+    strategy.close("Long")
+plot(fastEMA, "Fast EMA", color=color.green)
+plot(slowEMA, "Slow EMA", color=color.red)

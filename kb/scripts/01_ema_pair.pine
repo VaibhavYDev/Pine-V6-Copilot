@@ -1,0 +1,10 @@
+//@version=6
+// Two adjustable exponential moving averages for trend comparison.
+indicator("EMA Pair Study", overlay=true)
+fastLength = input.int(9, "Fast EMA", minval=1)
+slowLength = input.int(21, "Slow EMA", minval=1)
+fastEMA = ta.ema(close, fastLength)
+slowEMA = ta.ema(close, slowLength)
+plot(fastEMA, "Fast EMA", color=color.teal)
+plot(slowEMA, "Slow EMA", color=color.orange)
+bgcolor(fastEMA > slowEMA ? color.new(color.green, 92) : na)

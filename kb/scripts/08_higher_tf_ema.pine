@@ -1,0 +1,13 @@
+//@version=6
+// Higher-timeframe EMA that refuses a lower timeframe; its realtime value repaints until the higher-timeframe bar closes.
+indicator("Higher Timeframe EMA", overlay=true)
+referenceTimeframe = input.timeframe("60", "Reference timeframe")
+length = input.int(20, "EMA Length", minval=1)
+// A lower timeframe would return only the last intrabar value of each chart bar, so stop with a message instead.
+if timeframe.in_seconds(referenceTimeframe) < timeframe.in_seconds()
+    runtime.error("Choose a reference timeframe at or above the chart timeframe.")
+// lookahead_off keeps future data off historical bars, but on the realtime bar the value follows the unfinished
+// higher-timeframe bar. For a line that never repaints, request ta.ema(close, length)[1] with
+// barmerge.lookahead_on instead; it then lags by one higher-timeframe bar.
+higherEMA = request.security(syminfo.tickerid, referenceTimeframe, ta.ema(close, length), lookahead=barmerge.lookahead_off)
+plot(higherEMA, "HTF EMA", color=color.fuchsia)
