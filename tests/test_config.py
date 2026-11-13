@@ -8,6 +8,7 @@ from config import (
     kb_dir,
     load_settings,
     model_endpoint,
+    writer_model,
 )
 
 ENVIRONMENT = {
@@ -101,6 +102,24 @@ def test_base_url_must_be_https_on_an_approved_provider(base_url: str) -> None:
 
 def test_endpoint_repr_hides_the_api_key() -> None:
     assert "chat-secret" not in repr(model_endpoint("writer-model", MODELS))
+
+
+def test_the_writer_model_is_chat_model_with_its_endpoint_checked() -> None:
+    assert writer_model(MODELS) == "writer-model"
+
+
+@pytest.mark.parametrize(
+    ("environ", "problem"),
+    [
+        ({}, "CHAT_MODEL"),
+        (MODELS | {"CHAT_API_KEY": ""}, "CHAT_API_KEY"),
+        (MODELS | {"CHAT_BASE_URL": "http://x"}, "https"),
+    ],
+    ids=["no model", "no key", "bad url"],
+)
+def test_the_writer_model_needs_a_complete_endpoint(environ: dict[str, str], problem: str) -> None:
+    with pytest.raises(RuntimeError, match=problem):
+        writer_model(environ)
 
 
 EMBEDDING = {"GEMINI_API_KEY": "gemini-secret", "EMBED_MODEL": "gemini-embedding-001", "EMBED_DIM": "768"}

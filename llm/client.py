@@ -29,6 +29,8 @@ class Reply:
     output_tokens: int
     model: str
     latency_ms: int
+    finish_reason: str | None = None  # as the provider sent it; only "stop" confirms a complete reply
+    attempts: int = 1  # provider requests behind this reply: 2 after a retry
 
 
 class ModelCallError(Exception):
@@ -45,7 +47,7 @@ def chat(
     with openai.OpenAI(
         base_url=endpoint.base_url, api_key=endpoint.api_key, timeout=timeout, max_retries=0
     ) as client:
-        response = complete(client, endpoint, request, timeout)
+        response, attempts = complete(client, endpoint, request, timeout)
     # Token counts feed the daily budget, so a reply without them is an error, not zero tokens.
     if not response.choices or response.usage is None:
         raise ModelCallError(f"{describe(endpoint)} returned no choices or no token usage.")
@@ -55,22 +57,24 @@ def chat(
         output_tokens=response.usage.completion_tokens,
         model=response.model,
         latency_ms=round((time.perf_counter() - started) * 1000),
+        finish_reason=response.choices[0].finish_reason,
+        attempts=attempts,
     )
 
 
 def complete(
     client: openai.OpenAI, endpoint: ModelEndpoint, request: dict[str, object], timeout: float
-) -> ChatCompletion:
-    """Send the request, and once more after a transient failure."""
+) -> tuple[ChatCompletion, int]:
+    """Send the request, and once more after a transient failure. Also return how many requests were sent."""
     try:
-        return client.chat.completions.create(**request)
+        return client.chat.completions.create(**request), 1
     except TRANSIENT_ERRORS as error:
         logger.warning("%s; retrying once", failure(endpoint, error, timeout))
     except openai.APIError as error:
         raise ModelCallError(failure(endpoint, error, timeout)) from None
     time.sleep(RETRY_DELAY_SECONDS)
     try:
-        return client.chat.completions.create(**request)
+        return client.chat.completions.create(**request), 2
     except openai.APIError as error:
         raise ModelCallError(failure(endpoint, error, timeout)) from None
 

@@ -100,14 +100,16 @@ def provider(monkeypatch: pytest.MonkeyPatch) -> SimpleNamespace:
     return state
 
 
-def completion(model: str = "writer-model", usage: bool = True) -> ChatCompletion:
+def completion(model: str = "writer-model", usage: bool = True, finish_reason: str = "stop") -> ChatCompletion:
     return ChatCompletion.model_validate(
         {
             "id": "test",
             "object": "chat.completion",
             "created": 0,
             "model": model,
-            "choices": [{"index": 0, "message": {"role": "assistant", "content": "Done."}, "finish_reason": "stop"}],
+            "choices": [
+                {"index": 0, "message": {"role": "assistant", "content": "Done."}, "finish_reason": finish_reason}
+            ],
             "usage": {"prompt_tokens": 12, "completion_tokens": 3, "total_tokens": 15} if usage else None,
         }
     )
@@ -125,7 +127,7 @@ def timed_out() -> Exception:
 def test_writer_request_goes_to_groq_with_the_requested_settings(provider: SimpleNamespace) -> None:
     provider.outcomes.append(completion("writer-model"))
     reply = chat(MESSAGES, "writer-model", 1500, 0.2)
-    assert reply == Reply("Done.", 12, 3, "writer-model", reply.latency_ms)
+    assert reply == Reply("Done.", 12, 3, "writer-model", reply.latency_ms, "stop", 1)
     [client] = provider.clients
     assert client.options == {"base_url": GROQ_URL, "api_key": WRITER_KEY, "timeout": 30.0, "max_retries": 0}
     assert client.requests == [{"model": "writer-model", "messages": MESSAGES, "max_tokens": 1500, "temperature": 0.2}]
@@ -195,6 +197,17 @@ def test_a_permanent_failure_is_not_retried(provider: SimpleNamespace, error: Ex
         chat(MESSAGES, "writer-model", 10, 0)
     assert len(provider.clients[0].requests) == 1
     assert provider.sleeps == []
+
+
+@pytest.mark.parametrize("finish_reason", ["stop", "length", "content_filter"])
+def test_the_provider_finish_reason_is_passed_on(provider: SimpleNamespace, finish_reason: str) -> None:
+    provider.outcomes.append(completion(finish_reason=finish_reason))
+    assert chat(MESSAGES, "writer-model", 10, 0).finish_reason == finish_reason
+
+
+def test_a_retried_reply_counts_both_provider_requests(provider: SimpleNamespace) -> None:
+    provider.outcomes.extend([timed_out(), completion()])
+    assert chat(MESSAGES, "writer-model", 10, 0).attempts == 2
 
 
 def test_a_second_transient_failure_ends_the_call(provider: SimpleNamespace) -> None:

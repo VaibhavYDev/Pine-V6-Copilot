@@ -1,0 +1,8 @@
+A Pine Script v6 checker found problems in your last script.
+
+<CHECKER_FINDINGS>
+{one line per error: "line 6, col 35 [E01]: <message>"}
+</CHECKER_FINDINGS>
+
+Fix exactly these problems. Do not change anything else: keep names, inputs, logic and comments as they are.
+Reply with the full corrected script in one ```pine block and nothing else.

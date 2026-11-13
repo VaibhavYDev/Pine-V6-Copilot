@@ -81,6 +81,12 @@ def model_endpoint(model: str, environ: Mapping[str, str] = os.environ) -> Model
     return ModelEndpoint(roles[0], base_url, environ[f"{prefix}_API_KEY"], model)
 
 
+def writer_model(environ: Mapping[str, str] = os.environ) -> str:
+    """CHAT_MODEL, once its endpoint settings are complete and on an approved host."""
+    require(environ, "CHAT_MODEL")
+    return model_endpoint(environ["CHAT_MODEL"], environ).model
+
+
 @dataclass(frozen=True)
 class EmbeddingSettings:
     api_key: str = field(repr=False)
